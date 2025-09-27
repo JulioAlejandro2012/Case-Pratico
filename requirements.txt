@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-dotenv
+requests
+pdfplumber
+python-multipart
+google-generativeai
+langchain-google-genai
+langchain
+PyPDF2

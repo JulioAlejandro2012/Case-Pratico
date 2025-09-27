@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Classificador de E-mails</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Classificador de E-mails</h1>
+    <p>Insira o texto do e-mail ou anexe um arquivo (.txt ou .pdf) para classificação automática.</p>
+    <form id="emailForm" enctype="multipart/form-data">
+      <label for="text">Texto do E-mail</label>
+      <textarea id="text" name="text" rows="6" placeholder="Digite ou cole o texto do e-mail aqui..."></textarea>
+      
+      <div class="file-group">
+        <label for="file">Anexar arquivo (.txt ou .pdf)</label>
+        <input type="file" id="file" name="file" accept=".txt,.pdf">
+      </div>
+      
+      <button type="submit">Processar</button>
+    </form>
+
+    <div id="results" class="hidden">
+      <h2>Resultado</h2>
+      <div class="result-item">
+        <strong>Categoria:</strong>
+        <span id="categoria"></span>
+      </div>
+      <div class="result-item resposta-container">
+        <strong>Resposta:</strong>
+        <button id="copy-btn" class="copy-btn" title="Copiar resposta" type="button">Copiar texto 📋</button>
+        <span id="copied-msg" class="copied-msg hidden">Copiado!</span>
+        <div id="resposta"></div>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
