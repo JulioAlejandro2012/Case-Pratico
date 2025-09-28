@@ -1,3 +1,5 @@
+ require('dotenv').config();
+ 
 // Função para aguardar o DOM estar carregado
 function initializeApp() {
   const form = document.getElementById("emailForm");
@@ -29,7 +31,7 @@ function initializeApp() {
   const text = document.getElementById("text").value;
   const fileInput = document.getElementById("file");
   const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
-  const port = process.env.PORT || 8080
+  const port = process.env.PORT
 
   // Validação: exige texto ou arquivo
   if (!text && !file) {
