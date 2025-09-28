@@ -3,7 +3,7 @@ import re
 import pdfplumber
 import spacy
 
-nlp = spacy.load("en_core_news_sm")
+nlp = spacy.load("en_core_web_sm")
 
 def clean_text(text: str) -> str:
     text = re.sub(r"\s+", " ", text)
