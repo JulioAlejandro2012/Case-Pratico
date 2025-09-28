@@ -11,8 +11,9 @@ def clean_text(text: str) -> str:
 
 
 def preprocess_email_text(text: str) -> str:
-    doc = nlp(text.lower())
-    tokens = [token.lemma_ for token in doc if not token.is_stop and token.is_alpha]
+    # Preserve original case for date/time detection
+    doc = nlp(text)
+    tokens = [token.lemma_ for token in doc if not token.is_stop and (token.is_alpha or token.is_digit or token.text in ['h', ':', '/', '-'])]
     return " ".join(tokens)
 
 

@@ -1,6 +1,27 @@
-// Adiciona o evento de submit ao formulário
-document.getElementById("emailForm").addEventListener("submit", async (event) => {
-  event.preventDefault();
+// Função para aguardar o DOM estar carregado
+function initializeApp() {
+  const form = document.getElementById("emailForm");
+  const textElement = document.getElementById("text");
+  const fileElement = document.getElementById("file");
+  const resultsElement = document.getElementById("results");
+  const responseElement = document.getElementById("response");
+
+  // Verifica se todos os elementos necessários estão presentes
+  if (!form || !textElement || !fileElement || !resultsElement || !responseElement) {
+    console.error("Elementos necessários não encontrados no DOM");
+    console.log("Form:", form);
+    console.log("Text:", textElement);
+    console.log("File:", fileElement);
+    console.log("Results:", resultsElement);
+    console.log("Response:", responseElement);
+    return;
+  }
+
+  console.log("Todos os elementos encontrados, inicializando aplicação...");
+
+  // Adiciona o evento de submit ao formulário
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
   // Obtém os elementos do formulário
   const form = event.target;
@@ -35,7 +56,7 @@ document.getElementById("emailForm").addEventListener("submit", async (event) =>
 
   try {
     // Envia requisição para o backend
-    const response = await fetch("http://127.0.0.1:8080/process-email/", {
+    const response = await fetch("http://localhost:8080/process-email/", {
       method: "POST",
       body: formData,
     });
@@ -50,17 +71,29 @@ document.getElementById("emailForm").addEventListener("submit", async (event) =>
 
     // Recebe e exibe os dados de resultado
     const data = await response.json();
-    document.getElementById("categoria").innerText = data.Categoria;
-    document.getElementById("resposta").innerText = data.Resposta;
-    document.getElementById("results").classList.remove("hidden");
+    const responseElement = document.getElementById("response");
+    const categoriaElement = document.getElementById("categoria");
+    const resultsElement = document.getElementById("results");
+
+    if (responseElement) {
+      responseElement.innerText = data.response;
+    }
+    if (categoriaElement) {
+      categoriaElement.innerText = data.classification || "Não classificada";
+    }
+    if (resultsElement) {
+      resultsElement.classList.remove("hidden");
+      resultsElement.scrollIntoView({ behavior: "smooth" });
+
+    }
 
     // (Re)adiciona o evento ao botão de copiar
     const copyBtn = document.getElementById("copy-btn");
-    const respostaDiv = document.getElementById("resposta");
+    const responseDiv = document.getElementById("response");
     const copiedMsg = document.getElementById("copied-msg");
-    if (copyBtn && respostaDiv && copiedMsg) {
+    if (copyBtn && responseDiv && copiedMsg) {
       copyBtn.onclick = function () {
-        navigator.clipboard.writeText(respostaDiv.innerText).then(() => {
+        navigator.clipboard.writeText(responseDiv.innerText).then(() => {
           copiedMsg.classList.remove("hidden");
           setTimeout(() => {
             copiedMsg.classList.add("hidden");
@@ -76,4 +109,12 @@ document.getElementById("emailForm").addEventListener("submit", async (event) =>
     submitButton.disabled = false;
     submitButton.textContent = "Processar";
   }
-});
+  });
+}
+
+// Inicializa a aplicação quando o DOM estiver pronto
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  initializeApp();
+}

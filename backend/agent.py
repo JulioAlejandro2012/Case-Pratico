@@ -1,7 +1,14 @@
 import os
-import google.generativeai as genai
+from datetime import datetime
+from langchain.agents import create_tool_calling_agent
+from langchain.agents import AgentExecutor
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
+from langchain_community.tools.file_management import ReadFileTool, FileSearchTool, ListDirectoryTool
+from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_community.tools.file_management import ReadFileTool
+from langchain_core.prompts import MessagesPlaceholder
+from langchain_core.tools import tool
 from backend.nlp import preprocess_email_text
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
@@ -13,39 +20,79 @@ model = ChatGoogleGenerativeAI(
     google_api_key=GEMINI_API_KEY
 )
 
+agent_tools = [ReadFileTool(), FileSearchTool(), ListDirectoryTool()]
+
+# Prompt para classificação
 classification_prompt = ChatPromptTemplate.from_messages([
-    ("system",
-     "Você é um assistente que classifica emails em apenas duas categorias: "
-     "'Produtivo' ou 'Improdutivo'."),
-    ("human", "Email:\n{email_text}\n\nResponda apenas com a categoria.")
+    ("system","""
+    Você é um assistente que classifica e-mails corporativos.
+
+    INSTRUÇÕES DE CLASSIFICAÇÃO:
+    - Classifique APENAS como "Produtivo" ou "Improdutivo"
+    - Produtivo: E-mails profissionais, solicitações de trabalho, alinhamentos, reuniões, entregas, feedbacks, informações relevantes para o negócio
+    - Improdutivo: E-mails pessoais, correntes, propagandas, spam, assuntos não relacionados ao trabalho, fofocas, mensagens irrelevantes ou mensagens de baixo calão
+
+    Retorne APENAS a classificação: "Produtivo" ou "Improdutivo"
+    """),
+    ("human","Classifique este e-mail: {email_text}"),
+    MessagesPlaceholder(variable_name="agent_scratchpad")
 ])
 
+# Prompt para resposta
 response_prompt = ChatPromptTemplate.from_messages([
-    ("system",
-     "Você é um assistente que sugere respostas automáticas para emails corporativos.\n"
-     "Seu tom deve ser educado, formal, cordial e profissional."),
-    ("human",
-     "Email:\n{email_text}\n\n"
-     "Categoria: {categoria}\n"
-     "Sugira uma resposta adequada seguindo o padrão de email corporativo formal.")
+    ("system","""
+    Você é um assistente que gera respostas automáticas para e-mails corporativos.
+
+    INSTRUÇÕES PARA RESPOSTA:
+    - SEMPRE responda no formato de um e-mail, não importa o conteúdo da mensagem
+    - SEMPRE acesse ./rules.md para obter as regras e exemplos de respostas
+    - SEMPRE responda de forma educada, formal, cordial e profissional
+    - SEMPRE responda de forma coerente e relevante ao conteúdo do e-mail:
+        - Se algo não fizer sentido, peça esclarecimentos
+        - Se for um e-mail pessoal, responda de forma educada, mas informe que não pode ajudar
+        - Lide de forma apropriada com e-mails de spam, propaganda ou com conteúdo inadequado
+    - Você DEVE usar saudações apropriadas
+    - Você DEVE ser objetivo e claro
+    - Você DEVE seguir os exemplos do arquivo ./rules.md
+    - Você NÃO DEVE utilizar gírias ou abreviações informais
+    - Você DEVE terminar com despedida formal (Atenciosamente, Cordialmente)
+    """),
+    ("human","""
+    Gere uma resposta para este e-mail seguindo o padrão corporativo formal.
+    Email: {email_text}
+    """),
+    MessagesPlaceholder(variable_name="agent_scratchpad")
 ])
 
-def classify_email(email_text: str) -> str:
-    chain = classification_prompt | model
-    result = chain.invoke({"email_text": email_text})
-    return result.content.strip()
+# Agent para classificação
+classification_agent = create_tool_calling_agent(model, agent_tools, classification_prompt)
+classification_executor = AgentExecutor(agent=classification_agent, tools=agent_tools, verbose=False)
 
-def generate_response(email_text: str, categoria: str) -> str:
-    chain = response_prompt | model
-    result = chain.invoke({"email_text": email_text, "categoria": categoria})
-    return result.content.strip()
+# Agent para resposta
+response_agent = create_tool_calling_agent(model, agent_tools, response_prompt)
+response_executor = AgentExecutor(agent=response_agent, tools=agent_tools, verbose=False)
+
+def generate_classification(email_text: str) -> str:
+    """Gera apenas a classificação do e-mail"""
+    result = classification_executor.invoke({"email_text": email_text})
+    classification = result["output"].strip()
+    # Garante que seja apenas Produtivo ou Improdutivo
+    if "Produtivo" in classification:
+        return "Produtivo"
+    else:
+        return "Improdutivo"
+
+def generate_response(email_text: str) -> str:
+    """Gera apenas a resposta do e-mail"""
+    result = response_executor.invoke({"email_text": email_text})
+    return result["output"].strip()
 
 def process_email(raw_text: str) -> dict:
     clean_text = preprocess_email_text(raw_text)
-    categoria = classify_email(clean_text)
-    resposta = generate_response(clean_text, categoria)
+    classification = generate_classification(clean_text)
+    response = generate_response(clean_text)
 
     return {
-        "Categoria": categoria,
-        "Resposta": resposta
+        "response": response,
+        "classification": classification
     }
