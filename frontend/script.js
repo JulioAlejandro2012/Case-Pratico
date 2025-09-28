@@ -29,7 +29,6 @@ function initializeApp() {
   const text = document.getElementById("text").value;
   const fileInput = document.getElementById("file");
   const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
-  const port = process.env.PORT || 8080
 
   // Validação: exige texto ou arquivo
   if (!text && !file) {
@@ -57,7 +56,7 @@ function initializeApp() {
 
   try {
     // Envia requisição para o backend
-    const response = await fetch(`http://localhost:${port}/process-email/`, {
+    const response = await fetch(`${URL}`, {
       method: "POST",
       body: formData,
     });
