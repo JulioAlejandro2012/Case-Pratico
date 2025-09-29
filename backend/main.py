@@ -3,6 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from backend.nlp import extract_text_from_pdf_bytes
 from backend.agent import process_email
+import uvicorn
+import os
+
 app = FastAPI()
 
 # CORS
@@ -44,3 +47,7 @@ async def process_email_endpoint(
     return result
 
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

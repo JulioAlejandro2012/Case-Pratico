@@ -29,6 +29,7 @@ function initializeApp() {
   const fileInput = document.getElementById("file");
   const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
 
+
   // Validação: exige texto ou arquivo
   if (!text && !file) {
     alert("Por favor, insira um texto ou selecione um arquivo para processar.");
