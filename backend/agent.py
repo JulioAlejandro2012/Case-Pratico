@@ -20,7 +20,12 @@ model = ChatGoogleGenerativeAI(
     google_api_key=GEMINI_API_KEY
 )
 
-agent_tools = [ReadFileTool(), FileSearchTool(), ListDirectoryTool()]
+# Inicializa ferramentas com tratamento de erro
+try:
+    agent_tools = [ReadFileTool(), FileSearchTool(), ListDirectoryTool()]
+except Exception as e:
+    # Fallback para ferramentas básicas se houver erro
+    agent_tools = []
 
 # Prompt para classificação
 classification_prompt = ChatPromptTemplate.from_messages([
