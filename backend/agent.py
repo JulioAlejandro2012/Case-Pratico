@@ -93,11 +93,23 @@ def generate_response(email_text: str) -> str:
     return result["output"].strip()
 
 def process_email(raw_text: str) -> dict:
-    clean_text = preprocess_email_text(raw_text)
-    classification = generate_classification(clean_text)
-    response = generate_response(clean_text)
+    try:
+        print(f"Processando e-mail com {len(raw_text)} caracteres")
+        clean_text = preprocess_email_text(raw_text)
+        print(f"Texto limpo: {len(clean_text)} caracteres")
 
-    return {
-        "response": response,
-        "classification": classification
-    }
+        classification = generate_classification(clean_text)
+        print(f"Classificação: {classification}")
+
+        response = generate_response(clean_text)
+        print(f"Resposta gerada: {len(response)} caracteres")
+
+        return {
+            "response": response,
+            "classification": classification
+        }
+    except Exception as e:
+        print(f"Erro no process_email: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise
