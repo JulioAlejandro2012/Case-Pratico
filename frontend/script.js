@@ -1,6 +1,3 @@
- require('dotenv').config();
- 
-// Função para aguardar o DOM estar carregado
 function initializeApp() {
   const form = document.getElementById("emailForm");
   const textElement = document.getElementById("text");
@@ -31,7 +28,10 @@ function initializeApp() {
   const text = document.getElementById("text").value;
   const fileInput = document.getElementById("file");
   const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
-  const port = process.env.PORT
+  const url = await fetch("https://emailclassifierai.onrender.com/process-email", {
+    method: "POST",
+    body: formData
+  });
 
   // Validação: exige texto ou arquivo
   if (!text && !file) {
