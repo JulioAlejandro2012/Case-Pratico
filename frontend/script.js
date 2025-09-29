@@ -30,7 +30,7 @@ function initializeApp() {
   const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
   const url = await fetch("https://emailclassifierai.onrender.com/process-email", {
     method: "POST",
-    body: formData
+    body: formData,
   });
 
   // Validação: exige texto ou arquivo
