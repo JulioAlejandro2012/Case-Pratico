@@ -28,10 +28,6 @@ function initializeApp() {
   const text = document.getElementById("text").value;
   const fileInput = document.getElementById("file");
   const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
-  const url = await fetch("https://emailclassifierai.onrender.com/process-email", {
-    method: "POST",
-    body: formData,
-  });
 
   // Validação: exige texto ou arquivo
   if (!text && !file) {
@@ -59,7 +55,7 @@ function initializeApp() {
 
   try {
     // Envia requisição para o backend
-    const response = await fetch(`http://0.0.0.0:${port}/process-email/`, {
+    const response = await fetch('https://emailclassifierai.onrender.com/process-email/', {
       method: "POST",
       body: formData,
     });
